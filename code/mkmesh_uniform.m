@@ -12,13 +12,14 @@ function [mesh] = mkmesh_uniform(endpts, nelements, porder)
     mesh.nn(:) = 1:numel(mesh.nn);
     mesh.bcnn = [1 2] + numel(mesh.nn); % node numbers for bcs
     mesh.bcv = [0 1]; % values for BC (you can override this outside of mkmesh)
+    mesh.lrn = [1 numel(mesh.nn)]; % left and right node numbers
 
     mesh.f = zeros(nelements+1, 4);
     mesh.f(1:nelements-1, 1) = mesh.nn(end, 1:end-1);
     mesh.f(1:nelements-1, 2) = mesh.nn(1, 2:end);
     mesh.f(1:nelements-1, 3) = 1:nelements-1;
     mesh.f(1:nelements-1, 4) = 2:nelements;
-    mesh.f(end-1, :) = [mesh.bcnn(1), 1, 1, -1];
+    mesh.f(end-1, :) = [mesh.bcnn(1), 1, -1, 1];
     mesh.f(end, :) = [mesh.bcnn(2), mesh.nn(end,end), nelements, -2];
 
     mesh.ndof = numel(mesh.nn) + 2;

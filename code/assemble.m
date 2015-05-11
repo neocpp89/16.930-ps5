@@ -7,7 +7,7 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
 
     J = zeros(ng, ne);
     for i=1:ne
-        J(:, i) = master.dphi'*mesh.dgnodes(:, i)
+        J(:, i) = master.dphi'*mesh.dgnodes(:, i);
     end
 
     A = sparse(mesh.ndof, mesh.ndof);
@@ -32,16 +32,71 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
 
     % face integrals
     for i=1:nf
-        if (mesh.f(i, 4) > 0)
+        if (mesh.f(i, 4) > 0 && mesh.f(i, 3) > 0)
             % internal face
+            er = mesh.f(i, 4);
+            el = mesh.f(i, 3);
+            nr = mesh.f(i, 2);
+            nl = mesh.f(i, 1);
+
+            Af1 = zeros(2,2);
+            vv = 0.5*[c + abs(c), c - abs(c)]';
+            ww = [1 -1]';
+            nlr = [nl, nr];
+
+            Af1 = ww*vv';
+            A(nlr, nlr) = A(nlr, nlr) + Af1;
+
+            eln = mesh.nn(:, el);
+            ern = mesh.nn(:, er);
+
+            % ugly hack to get (constant) jacobians in there.
+            jl = master.dphi'*mesh.dgnodes(:,el);
+            jl = jl(1);
+            jr = master.dphi'*mesh.dgnodes(:,er);
+            jr = jr(1);
+
+            % this looks backwards, but we are looking at the right side of the left element, and vice versa for the right element
+            jl
+            jr
+            Af2l = -ww*0.5*nu*master.dright'/jl;
+            Af2r = -ww*0.5*nu*master.dleft'/jr;
+
+            A(nlr, eln) = A(nlr, eln) + Af2l;
+            A(nlr, ern) = A(nlr, ern) + Af2r;
+
+            % adjoint consistency
+            A(eln, nlr) = A(eln, nlr) + Af2l';
+            A(ern, nlr) = A(ern, nlr) + Af2r';
+
+            % same as before, looks backward but it's the right side of left element and vice versa.
+            etaf = 2;
+            rfl = etaf*0.5*nu*master.mass*master.ar/jl;
+            rfr = etaf*0.5*nu*master.mass*master.al/jr;
+            Af3l = ww*[rfl(end); -rfl(end)]';
+            Af3r = ww*[rfr(1); -rfr(1)]';
+            A(nlr, nlr) = A(nlr, nlr) + Af3l + Af3r;
+
         else
             % external (boundary) face
+            if (mesh.f(i, 3) < 0)
+                % left boundary
+            else
+                % right boundary
+            end
         end
     end
 
     % boundaries
-    % for i=1:numel(mesh.bcnn)
-    % end
+    lambdaL = mesh.bcnn(1);
+    wL = mesh.lrn(1);
+    A(wL, lambdaL) = 1;
+    A(lambdaL, wL) = 1;
+    lambdaR = mesh.bcnn(2);
+    wR = mesh.lrn(2);
+    A(wR, lambdaR) = (-1);
+    A(lambdaR, wR) = 1;
+    f(mesh.bcnn) = mesh.bcv;
 
-    A = full(A);
+    % A = full(A);
 end

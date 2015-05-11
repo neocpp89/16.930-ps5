@@ -14,10 +14,14 @@ master.gp = (x+1)/2;
 master.gw = w/2;
 master.phi = zeros(np, ng);
 master.dphi = zeros(np, ng);
+master.dleft = zeros(np, 1);
+master.dright = zeros(np, 1);
 P = lagrange(master.plocal);
 for i=1:np
     master.phi(i, :) = polyval(P(i, :), master.gp);
     master.dphi(i, :) = polyval(polyder(P(i, :)), master.gp);
+    master.dleft(i) = polyval(polyder(P(i, :)), master.plocal(1));
+    master.dright(i) = polyval(polyder(P(i, :)), master.plocal(end));
 end
 master.P = P;
 master.mass = master.phi * diag(master.gw) * master.phi';
