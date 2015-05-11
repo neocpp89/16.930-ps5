@@ -20,7 +20,7 @@ function [mesh] = mkmesh_uniform(endpts, nelements, porder)
     mesh.f(1:nelements-1, 3) = 1:nelements-1;
     mesh.f(1:nelements-1, 4) = 2:nelements;
     mesh.f(end-1, :) = [mesh.bcnn(1), 1, -1, 1];
-    mesh.f(end, :) = [mesh.bcnn(2), mesh.nn(end,end), nelements, -2];
+    mesh.f(end, :) = [mesh.nn(end,end), mesh.bcnn(2), nelements, -2];
 
     mesh.ndof = numel(mesh.nn) + 2;
 end

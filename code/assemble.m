@@ -19,7 +19,7 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
         scale = master.gw .* J(:, i);
         S = diag(scale);
         Ac = -master.dphi*S*c*master.phi';
-        Anu = master.dphi*S*nu*master.dphi';
+        Anu = master.dphi*S*diag(1./(J(:,i).*J(:,i)))*nu*master.dphi';
         Ab = master.phi*S*b*master.phi';
 
         fg = ffn(master.phi'*mesh.dgnodes(:,i)); % evaluate f at guass points
@@ -40,8 +40,8 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
             nl = mesh.f(i, 1);
 
             Af1 = zeros(2,2);
-            vv = 0.5*[c + abs(c), c - abs(c)]';
-            ww = [1 -1]';
+            vv = 0.5*[c + abs(c); c - abs(c)];
+            ww = [1; -1];
             nlr = [nl, nr];
 
             Af1 = ww*vv';
@@ -51,14 +51,10 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
             ern = mesh.nn(:, er);
 
             % ugly hack to get (constant) jacobians in there.
-            jl = master.dphi'*mesh.dgnodes(:,el);
-            jl = jl(1);
-            jr = master.dphi'*mesh.dgnodes(:,er);
-            jr = jr(1);
+            jl = J(1,el);
+            jr = J(1,er);
 
             % this looks backwards, but we are looking at the right side of the left element, and vice versa for the right element
-            jl
-            jr
             Af2l = -ww*0.5*nu*master.dright'/jl;
             Af2r = -ww*0.5*nu*master.dleft'/jr;
 
@@ -71,8 +67,8 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
 
             % same as before, looks backward but it's the right side of left element and vice versa.
             etaf = 2;
-            rfl = etaf*0.5*nu*master.mass*master.ar/jl;
-            rfr = etaf*0.5*nu*master.mass*master.al/jr;
+            rfl = -etaf*0.5*nu*master.ar;
+            rfr = -etaf*0.5*nu*master.al;
             Af3l = ww*[rfl(end); -rfl(end)]';
             Af3r = ww*[rfr(1); -rfr(1)]';
             A(nlr, nlr) = A(nlr, nlr) + Af3l + Af3r;
