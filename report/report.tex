@@ -1,0 +1,36 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{siunitx}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{amsmath}
+
+\begin{document}
+\author{Sachith Dunatunga}
+\title{16.930 PS5}
+\maketitle
+
+\section{Verification of primal DG}
+
+Since I was not able to get the DG code working at the time of the first project, I found it helpful to verify that this new implementation works as expected.
+
+As a reminder, the three problems are given by
+\begin{align}
+-u_{xx} &= x^2 \\
+-10^{-4} u_{xx} + u &= 0 \\
+-10^{-2} u_{xx} + u_x &= 0,
+\end{align}
+where the boundary conditions for all three are $u(0) = 0$ and $u(1) = 1$.
+Analytical solutions to the three problems are given by
+\begin{align}
+u(x) &= \frac{x}{12} \left( 13 - x^3 \right) \\
+u(x) &= \frac{\exp(100x) - \exp(-100x)}{\exp(100) - \exp(-100)} \\
+u(x) &= \frac{1 - \exp(100x)}{1 - \exp(100)}\\
+\end{align}
+respectively.
+
+\section{}
+
+\end{document}
