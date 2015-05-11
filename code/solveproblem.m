@@ -1,6 +1,6 @@
 clear all; close all;
 
-mesh = mkmesh_uniform([0, 1], 1000, 3);
+mesh = mkmesh_uniform([0, 1], 100, 1);
 master = mkmaster(mesh);
 
 [A,f] = assemble(mesh, 1, 0, 0, @(x) x.*x);

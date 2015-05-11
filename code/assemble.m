@@ -17,9 +17,11 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
     for i=1:ne
         enn = mesh.nn(:, i);
         scale = master.gw .* J(:, i);
+        invdetJ = 1 ./ J(:, i);
         S = diag(scale);
-        Ac = -master.dphi*S*c*master.phi';
-        Anu = master.dphi*S*diag(1./(J(:,i).*J(:,i)))*nu*master.dphi';
+        IDJ = diag(invdetJ);
+        Ac = -master.dphi*S*IDJ*c*master.phi';
+        Anu = master.dphi*S*IDJ*IDJ*nu*master.dphi';
         Ab = master.phi*S*b*master.phi';
 
         fg = ffn(master.phi'*mesh.dgnodes(:,i)); % evaluate f at guass points
