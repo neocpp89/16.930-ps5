@@ -1,10 +1,15 @@
 clear all; close all;
 
-N = 2.^[4:7]';
+% N = 2.^[4:7]';
+N = 2.^[4:6]';
 p = [1, 2, 3]';
 
-params = { {1, 0, 0, @(x) x.*x, 'Poisson'} };
-exact_solution = {@(x) x.*(13 - x.^3)/12};
+params = { {1, 0, 0, @(x) x.*x, 'Poisson'}, ...
+    {1e-2, 0, 1, @(x) 0*x, 'Convection-Diffusion'}, ...
+    {1e-4, 1, 0, @(x) 0*x, 'Reaction-Diffusion'} };
+exact_solution = { @(x) x.*(13 - x.^3)/12, ...
+    @(x) (1-exp(100*x)) ./ (1 - exp(100)), ...
+    @(x) (exp(100*x)-exp(-100*x)) ./ (exp(100) - exp(-100)) };
 errors = zeros(numel(params), numel(p), numel(N));
 
 for i=1:numel(p)
@@ -29,6 +34,7 @@ for i=1:numel(p)
              hold all;
              plot(x, ut, '.b', 'DisplayName', 'DG');
              plot( x, y, 'DisplayName', 'Exact');
+             title(sprintf('%s - Order %d (N = %d)', params{k}{5}, p(i), N(j)));
              hold off;
              legend(gca, 'show', 'location', 'NorthWest');
             l2err = sqrt(sum(err2));
