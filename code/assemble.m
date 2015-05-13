@@ -67,8 +67,8 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
 
             % same as before, looks backward but it's the right side of left element and vice versa.
             etaf = 2;
-            rfl = -etaf*0.5*nu*master.ar*jl;
-            rfr = -etaf*0.5*nu*master.al*jr;
+            rfl = -etaf*0.5*nu*master.ar/jl;
+            rfr = -etaf*0.5*nu*master.al/jr;
             Af3l = ww*[rfl(end); -rfl(end)]';
             Af3r = ww*[rfr(1); -rfr(1)]';
             A(nlr, nlr) = A(nlr, nlr) + Af3l + Af3r;
@@ -80,7 +80,7 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
                 ww = [-1];
 
                 Af1 = ww*vv';
-                A(nr, nr) = A(nr, nr) + Af1;
+                % A(nr, nr) = A(nr, nr) + Af1;
 
                 ern = mesh.nn(:, er);
 
@@ -88,12 +88,12 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
                 jr = J(1,er);
 
                 % this looks backwards, but we are looking at the right side of the left element, and vice versa for the right element
-                Af2r = -ww*nu*master.dleft'/jr;
+                Af2r = -0.5*ww*nu*master.dleft'/jr;
 
-                %A(nr, ern) = A(nr, ern) + Af2r;
+                % A(nr, ern) = A(nr, ern) + Af2r;
 
                 % adjoint consistency
-                %A(ern, nr) = A(ern, nr) + Af2r';
+                % A(ern, nr) = A(ern, nr) + Af2r';
 
                 % same as before, looks backward but it's the right side of left element and vice versa.
                 etaf = 2;
@@ -106,7 +106,7 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
                 ww = [1];
 
                 Af1 = ww*vv';
-                A(nl, nl) = A(nl, nl) + Af1;
+                % A(nl, nl) = A(nl, nl) + Af1;
 
                 eln = mesh.nn(:, el);
 
@@ -114,9 +114,9 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
                 jl = J(1,el);
 
                 % this looks backwards, but we are looking at the right side of the left element, and vice versa for the right element
-                Af2l = -ww*nu*master.dright'/jl;
+                Af2l = -0.5*ww*nu*master.dright'/jl;
 
-                %A(nl, eln) = A(nl, eln) + Af2l;
+                % A(nl, eln) = A(nl, eln) + Af2l;
 
                 % adjoint consistency
                 % A(eln, nl) = A(eln, nl) + Af2l';
@@ -131,18 +131,20 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
     end
 
     % boundaries
-    ww = [1; -1];
-    ll = [1; 1];
+    ab = [-1; 1];
+
     % A(mesh.lrn, mesh.bcnn) = ww*mesh.bcnn';
     lambdaL = mesh.bcnn(1);
     wL = mesh.lrn(1);
-    A(wL, lambdaL) = 1;
-    A(lambdaL, wL) = 1;
+    A(wL, lambdaL) = -1;
+    A(lambdaL, wL) = -1;
     lambdaR = mesh.bcnn(2);
     wR = mesh.lrn(2);
-    A(wR, lambdaR) = (-1);
+    A(wR, lambdaR) = 1;
     A(lambdaR, wR) = 1;
-    f(mesh.bcnn) = mesh.bcv;
+    fbc = mesh.bcv;
+    fbc(1) = -fbc(1);
+    f(mesh.bcnn) = fbc;
 
     % A = full(A);
 end
