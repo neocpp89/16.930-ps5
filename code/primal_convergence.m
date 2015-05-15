@@ -1,7 +1,7 @@
 clear all; close all;
 
 % N = 2.^[4:7]';
-N = 2.^[4:6]';
+N = 2.^[3:7]';
 p = [1, 2, 3]';
 
 params = { {1, 0, 0, @(x) x.*x, 'Poisson'}, ...
@@ -29,18 +29,18 @@ for i=1:numel(p)
             u = A \ f;
             ut = u(mesh.nn(:));
             un = reshape(ut, size(mesh.dgnodes));
-            eg = (master.phi'*un - exact_solution{k}(dgg)); 
+            eg2 = (master.phi'*un - exact_solution{k}(dgg)).^2; 
             J = master.dphi'*mesh.dgnodes;
-            err2 = master.gw'*(J.*(eg.*eg));
+            err2 = master.gw'*(J.*(eg2));
             x = mesh.dgnodes(:);
             y = exact_solution{k}(x);
-             figure;
-             hold all;
-             plot(x, ut, '.b', 'DisplayName', 'DG');
-             plot( x, y, 'DisplayName', 'Exact');
-             title(sprintf('%s - Order %d (N = %d)', params{k}{5}, p(i), N(j)));
-             hold off;
-             legend(gca, 'show', 'location', 'NorthWest');
+            % figure;
+            % hold all;
+            % plot(x, ut, '.b', 'DisplayName', 'DG');
+            % plot( x, y, 'DisplayName', 'Exact');
+            % title(sprintf('%s - Order %d (N = %d)', params{k}{5}, p(i), N(j)));
+            % hold off;
+            % legend(gca, 'show', 'location', 'Best');
             l2err = sqrt(sum(err2));
             errors(k, i, j) = l2err;
         end
@@ -61,7 +61,9 @@ for k=1:numel(params)
     for i=1:numel(p)
         y = squeeze(errors(k, i, :));
         loglog(N, y, 'DisplayName', sprintf('%s - Order %d', params{k}{5}, p(i)));
-        pf = polyfit(log(N), log(y), 1);
+        % pf = polyfit(log(N), log(y), 1);
+        % only pick the last couple of points to do convergence rate
+        pf = polyfit(log(N(end-1:end)), log(y(end-1:end)), 1);
         fprintf('%s - Order %d has rate %g.\n', params{k}{5}, p(i), pf(1));
     end
     hold off;

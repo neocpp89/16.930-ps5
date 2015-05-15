@@ -1,7 +1,7 @@
 function [master] = mkmaster(mesh, porder)
 if nargin == 1
     % try to make sure we can integrate the mass matrix at least...
-    master.porder = 2*mesh.porder;
+    master.porder = 1+2*mesh.porder;
 else
     master.porder = porder;
 end

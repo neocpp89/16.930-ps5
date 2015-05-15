@@ -30,6 +30,13 @@ u(x) &= \frac{\exp(100x) - \exp(-100x)}{\exp(100) - \exp(-100)} \\
 u(x) &= \frac{1 - \exp(100x)}{1 - \exp(100)}\\
 \end{align}
 respectively.
+We can then get the analytical outputs $J = \nu u_x \rvert_{x=1}$ as
+\begin{align}
+J &= \left(\frac{13}{12} - \frac{4x^3}{12} \right) \biggr\rvert_{x=1} = \frac{3}{4} \\
+J &= 10^{-4} \left( \frac{100 (\exp(100x) + \exp(-100x)}{\exp(100x) - \exp(-100)}\right) \biggr\rvert_{x=1} = \frac{\exp(100) + \exp(-100)}{100 (\exp(100) - \exp(-100))} = \frac{\coth(100)}{100} \\
+J &= 10^{-2} \left( \frac{-100 \exp(100x)}{1 - \exp(100)}\right) \biggr\rvert_{x=1} = \frac{1}{1 - \exp(-100)}
+\end{align}
+respectively.
 
 \section{}
 

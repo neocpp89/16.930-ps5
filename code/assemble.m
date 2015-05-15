@@ -16,17 +16,17 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
     % volume integrals
     for i=1:ne
         enn = mesh.nn(:, i);
-        scale = master.gw .* J(:, i);
-        invdetJ = 1 ./ J(:, i);
+        scale = master.gw;
         S = diag(scale);
-        IDJ = diag(invdetJ);
-        Ac = -master.dphi*S*IDJ*c*master.phi';
-        Anu = master.dphi*S*IDJ*IDJ*nu*master.dphi';
-        Ab = master.phi*S*b*master.phi';
+        JM = diag(J(:, 1));
+        IJM = diag(1 ./ J(:, 1));
+        Ac = -master.dphi*S*c*master.phi';
+        Anu = master.dphi*S*IJM*nu*master.dphi';
+        Ab = master.phi*S*JM*b*master.phi';
 
         fg = ffn(master.phi'*mesh.dgnodes(:,i)); % evaluate f at guass points
 
-        fk = master.phi*S*fg;
+        fk = master.phi*S*JM*fg;
         Ak = Ac + Anu + Ab;
         f(enn) = f(enn) +  fk;
         A(enn, enn) = A(enn, enn) + Ak;
@@ -67,13 +67,13 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
 
             % same as before, looks backward but it's the right side of left element and vice versa.
             etaf = 2;
-            rfl = -etaf*0.5*nu*master.ar/jl;
-            rfr = -etaf*0.5*nu*master.al/jr;
-            Af3l = ww*[rfl(end); -rfl(end)]';
-            Af3r = ww*[rfr(1); -rfr(1)]';
-            A(nlr, nlr) = A(nlr, nlr) + Af3l + Af3r;
+            rfl = master.ar(end)/jl;
+            rfr = master.al(1)/jr;
+            Af3 = -0.5*etaf*nu*(rfl+rfr)*ww*ww';
+            A(nlr, nlr) = A(nlr, nlr) + Af3;
         else
             % external (boundary) face
+            %{
             if (el < 0)
                 % left boundary
                 vv = 0.5*[c - abs(c)];
@@ -88,18 +88,19 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
                 jr = J(1,er);
 
                 % this looks backwards, but we are looking at the right side of the left element, and vice versa for the right element
-                Af2r = -0.5*ww*nu*master.dleft'/jr;
+                Af2r = -ww*nu*master.dleft'/jr;
 
-                % A(nr, ern) = A(nr, ern) + Af2r;
+                A(nr, ern) = A(nr, ern) + Af2r;
 
                 % adjoint consistency
-                % A(ern, nr) = A(ern, nr) + Af2r';
+                A(ern, nr) = A(ern, nr) + Af2r';
 
                 % same as before, looks backward but it's the right side of left element and vice versa.
                 etaf = 2;
-                rfr = -etaf*nu*master.al*jr;
+                rfr = -etaf*nu*master.al/jr;
                 Af3r = ww*[-rfr(1)]';
-                % A(nr, nr) = A(nr, nr) + Af3r;
+                A(nr, nr) = A(nr, nr) + Af3r;
+                f(nr) = f(nr) - mesh.bcv(1)*rfr(1);
             else
                 % right boundary
                 vv = 0.5*[c + abs(c)];
@@ -114,26 +115,25 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
                 jl = J(1,el);
 
                 % this looks backwards, but we are looking at the right side of the left element, and vice versa for the right element
-                Af2l = -0.5*ww*nu*master.dright'/jl;
+                Af2l = -ww*nu*master.dright'/jl;
 
-                % A(nl, eln) = A(nl, eln) + Af2l;
+                A(nl, eln) = A(nl, eln) + Af2l;
 
                 % adjoint consistency
-                % A(eln, nl) = A(eln, nl) + Af2l';
+                A(eln, nl) = A(eln, nl) + Af2l';
 
                 % same as before, looks backward but it's the right side of left element and vice versa.
                 etaf = 2;
-                rfl = -etaf*nu*master.ar*jl;
-                Af3l = ww*[rfl(end);]';
-                % A(nl, nl) = A(nl, nl) + Af3l;
+                rfl = -etaf*nu*master.ar/jl;
+                Af3l = ww*[rfl(end)]';
+                A(nl, nl) = A(nl, nl) + Af3l;
+                f(nl) = f(nl) + mesh.bcv(2)*rfl(end);
             end
+            %}
         end
     end
 
     % boundaries
-    ab = [-1; 1];
-
-    % A(mesh.lrn, mesh.bcnn) = ww*mesh.bcnn';
     lambdaL = mesh.bcnn(1);
     wL = mesh.lrn(1);
     A(wL, lambdaL) = -1;
