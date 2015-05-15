@@ -13,20 +13,17 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
     A = sparse(mesh.ndof, mesh.ndof);
     f = zeros(mesh.ndof, 1);
 
+    fg = ffn(master.phi'*mesh.dgnodes); % evaluate f at guass points
+
     % volume integrals
     for i=1:ne
         enn = mesh.nn(:, i);
-        scale = master.gw;
-        S = diag(scale);
-        JM = diag(J(:, 1));
-        IJM = diag(1 ./ J(:, 1));
-        Ac = element_convection_tangent(master, J(:, 1), c);
-        Anu = element_diffusion_tangent(master, J(:, 1), nu);
-        Ab = element_reaction_tangent(master, J(:, 1), b);
 
-        fg = ffn(master.phi'*mesh.dgnodes(:,i)); % evaluate f at guass points
+        Ac = element_convection_tangent(master, J(:, i), c);
+        Anu = element_diffusion_tangent(master, J(:, i), nu);
+        Ab = element_reaction_tangent(master, J(:, i), b);
+        fk = element_load_vector(master, J(:, i), fg(:, i));
 
-        fk = master.phi*S*JM*fg;
         Ak = Ac + Anu + Ab;
         f(enn) = f(enn) +  fk;
         A(enn, enn) = A(enn, enn) + Ak;
