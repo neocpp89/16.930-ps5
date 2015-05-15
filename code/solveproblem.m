@@ -1,6 +1,6 @@
 clear all; close all;
 
-mesh = mkmesh_uniform([0, 1], 100, 1);
+mesh = mkmesh_uniform([0, 1], 3, 1);
 master = mkmaster(mesh);
 mesh.bcv(1) = 0;
 

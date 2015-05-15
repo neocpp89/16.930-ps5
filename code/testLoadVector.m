@@ -33,7 +33,7 @@ classdef testLoadVector < matlab.unittest.TestCase
 
             fn = @(x) 1.2*x+20;
 
-            gp = master.phi'*mesh.dgnodes
+            gp = master.phi'*mesh.dgnodes;
 
             fg = fn(gp);
             f = element_load_vector(master, jacobians, fg);

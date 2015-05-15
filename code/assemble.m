@@ -5,10 +5,7 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
     ng = size(master.gp, 1);
     nf = size(mesh.f, 1);
 
-    J = zeros(ng, ne);
-    for i=1:ne
-        J(:, i) = master.dphi'*mesh.dgnodes(:, i);
-    end
+    J = master.dphi'*mesh.dgnodes;
 
     A = sparse(mesh.ndof, mesh.ndof);
     f = zeros(mesh.ndof, 1);
@@ -37,11 +34,11 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
         er = mesh.f(i, 4);
         if (el  > 0 && er > 0)
             % internal face
-            vv = 0.5*[c + abs(c); c - abs(c)];
             ww = [1; -1];
             nlr = [nl, nr];
+            elr = [el, er];
 
-            Af1 = ww*vv';
+            Af1 = face_dg_flux_tangent(master, J(:, elr), c);
             A(nlr, nlr) = A(nlr, nlr) + Af1;
 
             eln = mesh.nn(:, el);
