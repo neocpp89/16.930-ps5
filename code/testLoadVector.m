@@ -41,5 +41,26 @@ classdef testLoadVector < matlab.unittest.TestCase
             % from exact integration
             testCase.verifyEqual(f, [5.05; 5.1], 'Abstol', 1e-10);
         end
+
+        function testLoadVectorNonzeroP1(testCase)
+            % single element of order 1
+            mesh = mkmesh_uniform([0.2, 0.5], 1, 1);
+            master = mkmaster(mesh);
+
+            jacobians = master.dphi'*mesh.dgnodes;
+
+            % should be the 30 percent the size of master
+            testCase.verifyEqual(jacobians, 0.3*ones(size(jacobians)), 'Abstol', 1e-10);
+
+            fn = @(x) -1.36*x;
+
+            gp = master.phi'*mesh.dgnodes;
+
+            fg = fn(gp);
+            f = element_load_vector(master, jacobians, fg);
+
+            % from exact integration
+            testCase.verifyEqual(f, [-153/2500; -51/625], 'Abstol', 1e-10);
+        end
     end
 end
