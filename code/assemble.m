@@ -20,9 +20,9 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
         S = diag(scale);
         JM = diag(J(:, 1));
         IJM = diag(1 ./ J(:, 1));
-        Ac = -master.dphi*S*c*master.phi';
-        Anu = master.dphi*S*IJM*nu*master.dphi';
-        Ab = master.phi*S*JM*b*master.phi';
+        Ac = element_convection_tangent(master, J(:, 1), c);
+        Anu = element_diffusion_tangent(master, J(:, 1), nu);
+        Ab = element_reaction_tangent(master, J(:, 1), b);
 
         fg = ffn(master.phi'*mesh.dgnodes(:,i)); % evaluate f at guass points
 

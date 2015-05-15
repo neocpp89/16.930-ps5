@@ -20,7 +20,8 @@ y = x.*x;
 yfn_reaction = @(r, x) (exp(r*x)-exp(-r*x)) ./ (exp(r) - exp(-r));
 yfn_convection = @(r, x) (exp(r*x)-1) ./ (exp(r) - 1);
 % y = yfn_convection(c/nu, x);
-y = yfn_reaction(sqrt(b/nu), x);
+xx = linspace(0,1,200);
+yy = yfn_reaction(sqrt(b/nu), xx);
 % yfn = @(x) x.*x;
 % y = yfn(x);
-plot(x, ut, 'xr-', x, y)
+plot(x, ut, 'xr-', xx, yy)
