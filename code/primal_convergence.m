@@ -1,8 +1,10 @@
 clear all; close all;
 
-% N = 2.^[4:7]';
-N = 2.^[3:7]';
-p = [1, 2, 3]';
+plot_solutions = 0;
+% Ndof = 2.^[4:7]';
+Ndof = 2.^[2:8]';
+p = [1, 2, 3, 4, 5]';
+Ndof_actual = zeros(numel(p), numel(Ndof));
 
 params = { {1, 0, 0, @(x) x.*x, 'Poisson'}, ...
     {1e-2, 0, 1, @(x) 0*x, 'Convection-Diffusion'}, ...
@@ -14,12 +16,14 @@ exact_solution = { @(x) x.*(13 - x.^3)/12, ...
    @(x) (exp(100*x)-exp(-100*x)) ./ (exp(100) - exp(-100)) };
 % exact_solution = { @(x) x.^5 };
 % exact_solution = { @(x) (exp(10*x)-exp(-10*x)) ./ (exp(10) - exp(-10)) };
-errors = zeros(numel(params), numel(p), numel(N));
+errors = zeros(numel(params), numel(p), numel(Ndof));
 
 for i=1:numel(p)
-    for j=1:numel(N)
+    for j=1:numel(Ndof)
         for k=1:numel(params)
-            mesh = mkmesh_uniform([0, 1], N(j), p(i));
+            N = ceil(Ndof(j) / (1 + p(i)));
+            mesh = mkmesh_uniform([0, 1], N, p(i));
+            Ndof_actual(i, j) = numel(mesh.dgnodes);
             master = mkmaster(mesh);
 
             % gauss points in physical coordinates
@@ -34,13 +38,15 @@ for i=1:numel(p)
             err2 = master.gw'*(J.*(eg2));
             x = mesh.dgnodes(:);
             y = exact_solution{k}(x);
-            % figure;
-            % hold all;
-            % plot(x, ut, '.b', 'DisplayName', 'DG');
-            % plot( x, y, 'DisplayName', 'Exact');
-            % title(sprintf('%s - Order %d (N = %d)', params{k}{5}, p(i), N(j)));
-            % hold off;
-            % legend(gca, 'show', 'location', 'Best');
+            if (plot_solutions == 1)
+                figure;
+                hold all;
+                plot(x, ut, '.b', 'DisplayName', 'DG');
+                plot( x, y, 'DisplayName', 'Exact');
+                title(sprintf('%s - Order %d (N = %d)', params{k}{5}, p(i), N(j)));
+                hold off;
+                legend(gca, 'show', 'location', 'Best');
+            end
             l2err = sqrt(sum(err2));
             errors(k, i, j) = l2err;
         end
@@ -60,10 +66,10 @@ for k=1:numel(params)
     hold all;
     for i=1:numel(p)
         y = squeeze(errors(k, i, :));
-        loglog(N, y, 'DisplayName', sprintf('%s - Order %d', params{k}{5}, p(i)));
+        loglog(Ndof_actual(i, :)', y, 'DisplayName', sprintf('%s - Order %d', params{k}{5}, p(i)));
         % pf = polyfit(log(N), log(y), 1);
         % only pick the last couple of points to do convergence rate
-        pf = polyfit(log(N(end-1:end)), log(y(end-1:end)), 1);
+        pf = polyfit(log(Ndof_actual(i, end-1:end))', log(y(end-1:end)), 1);
         fprintf('%s - Order %d has rate %g.\n', params{k}{5}, p(i), pf(1));
     end
     hold off;
