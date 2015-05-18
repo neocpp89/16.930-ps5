@@ -45,23 +45,15 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
             ern = mesh.nn(:, er);
 
             [AL, AR] = face_primal_consistency_tangent(master, master, J(:, el), J(:, er), nu);
-
             A(nlr, eln) = A(nlr, eln) + AL;
             A(nlr, ern) = A(nlr, ern) + AR;
 
             [AL, AR] = face_adjoint_consistency_tangent(master, master, J(:, el), J(:, er), nu);
-
-            % adjoint consistency
             A(eln, nlr) = A(eln, nlr) + AL;
             A(ern, nlr) = A(ern, nlr) + AR;
 
             % same as before, looks backward but it's the right side of left element and vice versa.
-            jl = J(1, el);
-            jr = J(1, er);
-            etaf = 2;
-            rfl = master.ar(end)/jl;
-            rfr = master.al(1)/jr;
-            Af3 = -0.5*etaf*nu*(rfl+rfr)*ww*ww';
+            Af3 = face_lifting_tangent(master, master, J(:, el), J(:, er), nu);
             A(nlr, nlr) = A(nlr, nlr) + Af3;
         else
             % external (boundary) face (do this later)
