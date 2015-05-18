@@ -14,11 +14,11 @@ classdef testLiftingTangents < matlab.unittest.TestCase
 
             nu = 1;
             A = face_lifting_tangent(master, master, jacobians, jacobians, nu);
-            testCase.verifyEqual(A, -4*nu*[1, -1; -1 1], 'Abstol', 1e-10);
+            testCase.verifyEqual(A, 4*nu*[1, -1; -1 1], 'Abstol', 1e-10);
 
             nu = 0.3;
             A = face_lifting_tangent(master, master, jacobians, jacobians, nu);
-            testCase.verifyEqual(A, -4*nu*[1, -1; -1 1], 'Abstol', 1e-10);
+            testCase.verifyEqual(A, 4*nu*[1, -1; -1 1], 'Abstol', 1e-10);
         end
 
         function testFaceLiftingP1(testCase)
@@ -34,11 +34,11 @@ classdef testLiftingTangents < matlab.unittest.TestCase
             % tangent components double 
             nu = 1;
             A = face_lifting_tangent(master, master, jacobians, jacobians, nu);
-            testCase.verifyEqual(A, -8*nu*[1, -1; -1 1], 'Abstol', 1e-10);
+            testCase.verifyEqual(A, 8*nu*[1, -1; -1 1], 'Abstol', 1e-10);
 
             nu = 0.3;
             A = face_lifting_tangent(master, master, jacobians, jacobians, nu);
-            testCase.verifyEqual(A, -8*nu*[1, -1; -1 1], 'Abstol', 1e-10);
+            testCase.verifyEqual(A, 8*nu*[1, -1; -1 1], 'Abstol', 1e-10);
         end
     end
 end
