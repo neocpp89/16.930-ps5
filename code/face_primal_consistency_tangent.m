@@ -8,6 +8,7 @@ function [AL, AR] = face_primal_consistency_tangent(left_master, right_master, l
     jl = left_jacobians(1);
     jr = right_jacobians(1);
 
+    % this looks backwards, but we are looking at the right side of the left element, and vice versa for the right element
     AL = -w*0.5*nu*left_master.dright'./jl;
     AR = -w*0.5*nu*right_master.dleft'./jr;
 end

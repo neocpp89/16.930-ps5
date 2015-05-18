@@ -44,86 +44,27 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
             eln = mesh.nn(:, el);
             ern = mesh.nn(:, er);
 
-            % ugly hack to get (constant) jacobians in there.
-            jl = J(1,el);
-            jr = J(1,er);
+            [AL, AR] = face_primal_consistency_tangent(master, master, J(:, el), J(:, er), nu);
 
-            % this looks backwards, but we are looking at the right side of the left element, and vice versa for the right element
-            Af2l = -ww*0.5*nu*master.dright'/jl;
-            Af2r = -ww*0.5*nu*master.dleft'/jr;
+            A(nlr, eln) = A(nlr, eln) + AL;
+            A(nlr, ern) = A(nlr, ern) + AR;
 
-            A(nlr, eln) = A(nlr, eln) + Af2l;
-            A(nlr, ern) = A(nlr, ern) + Af2r;
+            [AL, AR] = face_adjoint_consistency_tangent(master, master, J(:, el), J(:, er), nu);
 
             % adjoint consistency
-            A(eln, nlr) = A(eln, nlr) + Af2l';
-            A(ern, nlr) = A(ern, nlr) + Af2r';
+            A(eln, nlr) = A(eln, nlr) + AL;
+            A(ern, nlr) = A(ern, nlr) + AR;
 
             % same as before, looks backward but it's the right side of left element and vice versa.
+            jl = J(1, el);
+            jr = J(1, er);
             etaf = 2;
             rfl = master.ar(end)/jl;
             rfr = master.al(1)/jr;
             Af3 = -0.5*etaf*nu*(rfl+rfr)*ww*ww';
             A(nlr, nlr) = A(nlr, nlr) + Af3;
         else
-            % external (boundary) face
-            %{
-            if (el < 0)
-                % left boundary
-                vv = 0.5*[c - abs(c)];
-                ww = [-1];
-
-                Af1 = ww*vv';
-                % A(nr, nr) = A(nr, nr) + Af1;
-
-                ern = mesh.nn(:, er);
-
-                % ugly hack to get (constant) jacobians in there.
-                jr = J(1,er);
-
-                % this looks backwards, but we are looking at the right side of the left element, and vice versa for the right element
-                Af2r = -ww*nu*master.dleft'/jr;
-
-                A(nr, ern) = A(nr, ern) + Af2r;
-
-                % adjoint consistency
-                A(ern, nr) = A(ern, nr) + Af2r';
-
-                % same as before, looks backward but it's the right side of left element and vice versa.
-                etaf = 2;
-                rfr = -etaf*nu*master.al/jr;
-                Af3r = ww*[-rfr(1)]';
-                A(nr, nr) = A(nr, nr) + Af3r;
-                f(nr) = f(nr) - mesh.bcv(1)*rfr(1);
-            else
-                % right boundary
-                vv = 0.5*[c + abs(c)];
-                ww = [1];
-
-                Af1 = ww*vv';
-                % A(nl, nl) = A(nl, nl) + Af1;
-
-                eln = mesh.nn(:, el);
-
-                % ugly hack to get (constant) jacobians in there.
-                jl = J(1,el);
-
-                % this looks backwards, but we are looking at the right side of the left element, and vice versa for the right element
-                Af2l = -ww*nu*master.dright'/jl;
-
-                A(nl, eln) = A(nl, eln) + Af2l;
-
-                % adjoint consistency
-                A(eln, nl) = A(eln, nl) + Af2l';
-
-                % same as before, looks backward but it's the right side of left element and vice versa.
-                etaf = 2;
-                rfl = -etaf*nu*master.ar/jl;
-                Af3l = ww*[rfl(end)]';
-                A(nl, nl) = A(nl, nl) + Af3l;
-                f(nl) = f(nl) + mesh.bcv(2)*rfl(end);
-            end
-            %}
+            % external (boundary) face (do this later)
         end
     end
 
@@ -139,6 +80,4 @@ function [A, f] = assemble(mesh, nu, b, c, ffn)
     fbc = mesh.bcv;
     fbc(1) = -fbc(1);
     f(mesh.bcnn) = fbc;
-
-    % A = full(A);
 end
