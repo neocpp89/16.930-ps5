@@ -38,6 +38,15 @@ J &= 10^{-2} \left( \frac{-100 \exp(100x)}{1 - \exp(100)}\right) \biggr\rvert_{x
 \end{align}
 respectively.
 
+\section{Adjoint Equations}
+From the FEM1D notes, we know that even order terms remain the same in the adjoint equation.
+The convection term flips sign and can no longer be written in a total-derivative form.
+The adjoint operator for the 1D convection-diffusion-reaction equation acting on a function $w$ is then given by
+\begin{align}
+L^*w = -c w_x - \nu w_{xx} + b w
+\end{align}
+when $\nu$ has no spatial dependence.
+
 \section{}
 
 \end{document}
