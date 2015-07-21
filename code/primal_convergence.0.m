@@ -1,6 +1,6 @@
 clear all; close all;
 
-plot_solutions = 0;
+plot_solutions = 1;
 % Ndof = 2.^[4:7]';
 Ndof = 2.^[2:8]';
 p = [1, 2, 3, 4, 5]';
