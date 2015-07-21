@@ -2,7 +2,7 @@ clear all; close all;
 
 plot_solutions = 0;
 % Ndof = 2.^[4:7]';
-Ndof = 2.^[2:8]';
+Ndof = 2.^[2:10]';
 p = [1, 2, 3, 4, 5]';
 Ndof_actual = zeros(numel(p), numel(Ndof));
 
